@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -73,8 +73,11 @@ export type Database = {
           id: string
           project_id: string | null
           purpose: string
-          quantity: number
+          received_by: string | null
           return_condition: string | null
+          return_confirmed: boolean | null
+          return_confirmed_at: string | null
+          returned_by: string | null
           reusability_percentage: number | null
           status: Database["public"]["Enums"]["handover_status"]
           updated_at: string
@@ -90,8 +93,11 @@ export type Database = {
           id?: string
           project_id?: string | null
           purpose: string
-          quantity?: number
+          received_by?: string | null
           return_condition?: string | null
+          return_confirmed?: boolean | null
+          return_confirmed_at?: string | null
+          returned_by?: string | null
           reusability_percentage?: number | null
           status?: Database["public"]["Enums"]["handover_status"]
           updated_at?: string
@@ -107,27 +113,16 @@ export type Database = {
           id?: string
           project_id?: string | null
           purpose?: string
-          quantity?: number
+          received_by?: string | null
           return_condition?: string | null
+          return_confirmed?: boolean | null
+          return_confirmed_at?: string | null
+          returned_by?: string | null
           reusability_percentage?: number | null
           status?: Database["public"]["Enums"]["handover_status"]
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "asset_allocations_allocated_by_fkey"
-            columns: ["allocated_by"]
-            isOneToOne: false
-            referencedRelation: "employees"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "asset_allocations_allocated_to_fkey"
-            columns: ["allocated_to"]
-            isOneToOne: false
-            referencedRelation: "employees"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "asset_allocations_asset_master_id_fkey"
             columns: ["asset_master_id"]
@@ -233,12 +228,10 @@ export type Database = {
         Row: {
           accumulated_depreciation: number | null
           activation_date: string | null
-          allocated_quantity: number
           amortization_period_months: number | null
           asset_id: string
           asset_name: string
           asset_type: Database["public"]["Enums"]["asset_type"]
-          brand: string | null
           cost_basis: number
           cost_center: string
           created_at: string
@@ -248,29 +241,20 @@ export type Database = {
             | Database["public"]["Enums"]["depreciation_method"]
             | null
           id: string
-          installation_scope: string | null
           inventory_item_id: string | null
           nbv: number | null
-          notes: string | null
-          quantity_per_contract: number | null
-          quantity_requested: number | null
-          quantity_supplied_previous: number | null
           sku: string
-          stock_quantity: number
           total_maintenance_cost: number | null
-          unit: string | null
           updated_at: string
           useful_life_months: number | null
         }
         Insert: {
           accumulated_depreciation?: number | null
           activation_date?: string | null
-          allocated_quantity?: number
           amortization_period_months?: number | null
           asset_id: string
           asset_name: string
           asset_type: Database["public"]["Enums"]["asset_type"]
-          brand?: string | null
           cost_basis?: number
           cost_center: string
           created_at?: string
@@ -280,29 +264,20 @@ export type Database = {
             | Database["public"]["Enums"]["depreciation_method"]
             | null
           id?: string
-          installation_scope?: string | null
           inventory_item_id?: string | null
           nbv?: number | null
-          notes?: string | null
-          quantity_per_contract?: number | null
-          quantity_requested?: number | null
-          quantity_supplied_previous?: number | null
           sku: string
-          stock_quantity?: number
           total_maintenance_cost?: number | null
-          unit?: string | null
           updated_at?: string
           useful_life_months?: number | null
         }
         Update: {
           accumulated_depreciation?: number | null
           activation_date?: string | null
-          allocated_quantity?: number
           amortization_period_months?: number | null
           asset_id?: string
           asset_name?: string
           asset_type?: Database["public"]["Enums"]["asset_type"]
-          brand?: string | null
           cost_basis?: number
           cost_center?: string
           created_at?: string
@@ -312,17 +287,10 @@ export type Database = {
             | Database["public"]["Enums"]["depreciation_method"]
             | null
           id?: string
-          installation_scope?: string | null
           inventory_item_id?: string | null
           nbv?: number | null
-          notes?: string | null
-          quantity_per_contract?: number | null
-          quantity_requested?: number | null
-          quantity_supplied_previous?: number | null
           sku?: string
-          stock_quantity?: number
           total_maintenance_cost?: number | null
-          unit?: string | null
           updated_at?: string
           useful_life_months?: number | null
         }
@@ -1007,124 +975,6 @@ export type Database = {
         }
         Relationships: []
       }
-      project_items: {
-        Row: {
-          completion_percentage: number
-          created_at: string
-          created_by: string | null
-          description: string | null
-          end_date: string | null
-          id: string
-          item_name: string
-          project_id: string
-          quantity: number
-          start_date: string | null
-          status: string
-          total_price: number
-          unit: string
-          unit_price: number
-          updated_at: string
-        }
-        Insert: {
-          completion_percentage?: number
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          end_date?: string | null
-          id?: string
-          item_name: string
-          project_id: string
-          quantity?: number
-          start_date?: string | null
-          status?: string
-          total_price?: number
-          unit?: string
-          unit_price?: number
-          updated_at?: string
-        }
-        Update: {
-          completion_percentage?: number
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          end_date?: string | null
-          id?: string
-          item_name?: string
-          project_id?: string
-          quantity?: number
-          start_date?: string | null
-          status?: string
-          total_price?: number
-          unit?: string
-          unit_price?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_items_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      project_kpis: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          current_value: number
-          description: string | null
-          due_date: string | null
-          id: string
-          kpi_name: string
-          project_id: string
-          status: string
-          target_value: number
-          unit: string
-          updated_at: string
-          weight: number
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          current_value?: number
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          kpi_name: string
-          project_id: string
-          status?: string
-          target_value?: number
-          unit?: string
-          updated_at?: string
-          weight?: number
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          current_value?: number
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          kpi_name?: string
-          project_id?: string
-          status?: string
-          target_value?: number
-          unit?: string
-          updated_at?: string
-          weight?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_kpis_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       projects: {
         Row: {
           budget: number | null
@@ -1212,13 +1062,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "tasks_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "employees"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "tasks_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
@@ -1259,30 +1102,6 @@ export type Database = {
           },
         ]
       }
-      user_permissions: {
-        Row: {
-          allowed_modules: string[] | null
-          created_at: string
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          allowed_modules?: string[] | null
-          created_at?: string
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          allowed_modules?: string[] | null
-          created_at?: string
-          id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string
@@ -1316,21 +1135,13 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_project_owner: {
-        Args: { _project_id: string; _user_id: string }
-        Returns: boolean
-      }
-      is_team_member: {
-        Args: { _project_id: string; _user_id: string }
-        Returns: boolean
-      }
-      user_can_access_project: {
+      is_project_team_member: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
       }
     }
     Enums: {
-      app_role: "admin" | "user" | "accountant" | "hr_admin" | "project_manager"
+      app_role: "admin" | "user"
       asset_status:
         | "in_stock"
         | "active"
@@ -1474,7 +1285,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user", "accountant", "hr_admin", "project_manager"],
+      app_role: ["admin", "user"],
       asset_status: [
         "in_stock",
         "active",

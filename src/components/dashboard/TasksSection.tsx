@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { ExportButtons } from "@/components/ExportButtons";
 import { exportToExcel, exportToPDF, taskExportConfig } from "@/lib/exportUtils";
+import { TaskImportDialog } from "@/components/tasks/TaskImportDialog";
 
 interface Task {
   id: string;
@@ -323,6 +324,7 @@ export const TasksSection = () => {
                 onExportExcel={() => handleExportTasks("excel")}
                 onExportPDF={() => handleExportTasks("pdf")}
               />
+              <TaskImportDialog onImportSuccess={fetchTasks} />
               <Dialog open={dialogOpen} onOpenChange={(open) => {
             setDialogOpen(open);
             if (!open) resetForm();
