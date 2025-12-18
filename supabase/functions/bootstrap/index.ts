@@ -139,7 +139,9 @@ serve(async (req) => {
 
     console.log(`Creating first admin user: ${email}, IP: ${clientIP}`);
 
-    // Create user
+    // Try to create user, or get existing user
+    let userId: string | undefined;
+    
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: email.trim().toLowerCase(),
       password,
@@ -150,39 +152,85 @@ serve(async (req) => {
     });
 
     if (createError) {
-      console.error("Error creating user:", createError);
-      throw createError;
+      // If user already exists, try to get the user and update their password
+      if (createError.message?.includes("already been registered")) {
+        console.log("User exists, finding and updating...");
+        
+        // List users to find the one with this email
+        const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) throw listError;
+        
+        const existingUser = users.users.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
+        if (existingUser) {
+          userId = existingUser.id;
+          
+          // Update password
+          const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+            password,
+            email_confirm: true,
+          });
+          if (updateError) {
+            console.error("Error updating password:", updateError);
+          } else {
+            console.log("Password updated for existing user");
+          }
+        } else {
+          throw new Error("User exists but could not be found");
+        }
+      } else {
+        throw createError;
+      }
+    } else {
+      userId = newUser.user?.id;
+      console.log("User created:", userId);
     }
 
-    console.log("User created:", newUser.user?.id);
-
-    if (newUser.user) {
-      // Create profile for the new user
-      const { error: profileError } = await supabaseAdmin
+    if (userId) {
+      // Check if profile exists
+      const { data: existingProfile } = await supabaseAdmin
         .from("profiles")
-        .insert({
-          id: newUser.user.id,
-          full_name: fullName?.trim() || "Admin",
-        });
+        .select("id")
+        .eq("id", userId)
+        .single();
 
-      if (profileError) {
-        console.error("Error creating profile:", profileError);
-      } else {
-        console.log("Profile created for user:", newUser.user.id);
+      if (!existingProfile) {
+        // Create profile for the new user
+        const { error: profileError } = await supabaseAdmin
+          .from("profiles")
+          .insert({
+            id: userId,
+            full_name: fullName?.trim() || "Admin",
+          });
+
+        if (profileError) {
+          console.error("Error creating profile:", profileError);
+        } else {
+          console.log("Profile created for user:", userId);
+        }
       }
 
-      // Create admin role
-      const { error: roleError } = await supabaseAdmin
+      // Check if admin role exists
+      const { data: existingRole } = await supabaseAdmin
         .from("user_roles")
-        .insert({
-          user_id: newUser.user.id,
-          role: "admin",
-        });
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .single();
 
-      if (roleError) {
-        console.error("Error creating role:", roleError);
-      } else {
-        console.log("Admin role assigned to user:", newUser.user.id);
+      if (!existingRole) {
+        // Create admin role
+        const { error: roleError } = await supabaseAdmin
+          .from("user_roles")
+          .upsert({
+            user_id: userId,
+            role: "admin",
+          });
+
+        if (roleError) {
+          console.error("Error creating role:", roleError);
+        } else {
+          console.log("Admin role assigned to user:", userId);
+        }
       }
     }
 
@@ -190,7 +238,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: "Admin user created successfully",
-        user: { id: newUser.user?.id, email: newUser.user?.email }
+        user: { id: userId, email: email.trim().toLowerCase() }
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
