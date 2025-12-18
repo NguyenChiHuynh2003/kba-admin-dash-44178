@@ -55,18 +55,18 @@ export const ProjectKPIsTab = ({ projectId }: ProjectKPIsTabProps) => {
     queryKey: ["project-kpis", projectId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("project_kpis")
+        .from("project_kpis" as any)
         .select("*")
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as ProjectKPI[];
+      return data as unknown as ProjectKPI[];
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("project_kpis").insert({
+      const { error } = await supabase.from("project_kpis" as any).insert({
         project_id: projectId,
         kpi_name: formData.kpi_name,
         description: formData.description || null,
@@ -77,7 +77,7 @@ export const ProjectKPIsTab = ({ projectId }: ProjectKPIsTabProps) => {
         status: formData.status,
         due_date: formData.due_date || null,
         created_by: user?.id,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -93,7 +93,7 @@ export const ProjectKPIsTab = ({ projectId }: ProjectKPIsTabProps) => {
   const updateMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("project_kpis")
+        .from("project_kpis" as any)
         .update({
           kpi_name: formData.kpi_name,
           description: formData.description || null,
@@ -103,7 +103,7 @@ export const ProjectKPIsTab = ({ projectId }: ProjectKPIsTabProps) => {
           weight: formData.weight,
           status: formData.status,
           due_date: formData.due_date || null,
-        })
+        } as any)
         .eq("id", id);
       if (error) throw error;
     },
@@ -119,7 +119,7 @@ export const ProjectKPIsTab = ({ projectId }: ProjectKPIsTabProps) => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("project_kpis").delete().eq("id", id);
+      const { error } = await supabase.from("project_kpis" as any).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
