@@ -44,8 +44,6 @@ interface AssetMaster {
   asset_id: string;
   asset_name: string;
   asset_type: string;
-  brand: string | null;
-  unit: string | null;
   sku: string;
   cost_center: string;
   cost_basis: number;
@@ -55,10 +53,8 @@ interface AssetMaster {
   depreciation_method: string | null;
   useful_life_months: number | null;
   activation_date: string | null;
-  notes: string | null;
   created_at: string;
-  stock_quantity: number;
-  allocated_quantity: number;
+  total_maintenance_cost: number | null;
 }
 
 export function AssetMasterList() {
@@ -79,7 +75,7 @@ export function AssetMasterList() {
       setLoading(true);
       const { data, error } = await supabase
         .from("asset_master_data")
-        .select("id, asset_id, asset_name, asset_type, brand, unit, sku, cost_center, cost_basis, accumulated_depreciation, nbv, current_status, depreciation_method, useful_life_months, activation_date, notes, created_at, stock_quantity, allocated_quantity")
+        .select("id, asset_id, asset_name, asset_type, sku, cost_center, cost_basis, accumulated_depreciation, nbv, current_status, depreciation_method, useful_life_months, activation_date, created_at, total_maintenance_cost")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -212,15 +208,12 @@ export function AssetMasterList() {
       "Mã tài sản": asset.asset_id,
       "Tên tài sản": asset.asset_name,
       "Loại tài sản": getTypeLabel(asset.asset_type),
-      "Nhãn hiệu": asset.brand || "",
-      "ĐVT": asset.unit || "",
       "SKU": asset.sku,
       "Trung tâm chi phí": asset.cost_center,
       "Nguyên giá": asset.cost_basis,
       "Khấu hao lũy kế": asset.accumulated_depreciation || 0,
       "Giá trị còn lại": asset.nbv || 0,
       "Trạng thái": getStatusLabel(asset.current_status),
-      "Ghi chú": asset.notes || "",
     }));
 
     const options = {
@@ -231,8 +224,7 @@ export function AssetMasterList() {
         { key: "Mã tài sản", header: "Mã tài sản" },
         { key: "Tên tài sản", header: "Tên tài sản" },
         { key: "Loại tài sản", header: "Loại tài sản" },
-        { key: "Nhãn hiệu", header: "Nhãn hiệu" },
-        { key: "ĐVT", header: "ĐVT" },
+        { key: "SKU", header: "SKU" },
         { key: "Trung tâm chi phí", header: "Trung tâm CP" },
         { key: "Nguyên giá", header: "Nguyên giá" },
         { key: "Khấu hao lũy kế", header: "Khấu hao LK" },
@@ -402,11 +394,10 @@ export function AssetMasterList() {
               <TableHead>Mã tài sản</TableHead>
               <TableHead className="min-w-[200px]">Tên tài sản</TableHead>
               <TableHead>Loại</TableHead>
-              <TableHead>Nhãn hiệu</TableHead>
-              <TableHead>ĐVT</TableHead>
-              <TableHead className="text-right">Tồn kho</TableHead>
-              <TableHead className="text-right">Đã phân bổ</TableHead>
+              <TableHead>SKU</TableHead>
+              <TableHead>Trung tâm CP</TableHead>
               <TableHead className="text-right">Nguyên giá</TableHead>
+              <TableHead className="text-right">NBV</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead className="w-20">Thao tác</TableHead>
             </TableRow>
@@ -414,13 +405,13 @@ export function AssetMasterList() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={12} className="text-center py-8">
+                <TableCell colSpan={10} className="text-center py-8">
                   Đang tải...
                 </TableCell>
               </TableRow>
             ) : filteredAssets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="text-center py-8">
+                <TableCell colSpan={10} className="text-center py-8">
                   Chưa có dữ liệu tài sản
                 </TableCell>
               </TableRow>
@@ -433,16 +424,13 @@ export function AssetMasterList() {
                   <TableCell>
                     <Badge variant="outline">{getTypeLabel(asset.asset_type)}</Badge>
                   </TableCell>
-                  <TableCell>{asset.brand || "-"}</TableCell>
-                  <TableCell>{asset.unit || "-"}</TableCell>
-                  <TableCell className="text-right font-semibold text-green-600">
-                    {asset.stock_quantity || 0}
-                  </TableCell>
-                  <TableCell className="text-right font-semibold text-orange-600">
-                    {asset.allocated_quantity || 0}
-                  </TableCell>
+                  <TableCell className="font-mono text-sm">{asset.sku}</TableCell>
+                  <TableCell>{asset.cost_center}</TableCell>
                   <TableCell className="text-right">
                     {formatCurrency(asset.cost_basis)}
+                  </TableCell>
+                  <TableCell className="text-right font-semibold text-green-600">
+                    {formatCurrency(asset.nbv || 0)}
                   </TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(asset.current_status)}>

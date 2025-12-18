@@ -116,16 +116,7 @@ export const OverviewSection = () => {
       // Fetch projects with items for detailed view
       const { data: projectsWithItems, error: projectsItemsError } = await supabase
         .from("projects")
-        .select(`
-          id,
-          name,
-          status,
-          project_items (
-            id,
-            item_name,
-            completion_percentage
-          )
-        `)
+        .select("id, name, status")
         .in("status", ["planning", "in_progress"])
         .order("created_at", { ascending: false })
         .limit(5);
@@ -144,11 +135,17 @@ export const OverviewSection = () => {
         // Get unique assignees count
         const uniqueAssignees = new Set(taskAssignees?.map(t => t.assigned_to) || []);
 
+        // Fetch project items separately
+        const { data: projectItems } = await supabase
+          .from("project_items" as any)
+          .select("id, item_name, completion_percentage")
+          .eq("project_id", project.id) as any;
+
         projectsData.push({
           id: project.id,
           name: project.name,
           status: project.status,
-          items: project.project_items || [],
+          items: (projectItems as any[]) || [],
           teamCount: uniqueAssignees.size,
         });
       }

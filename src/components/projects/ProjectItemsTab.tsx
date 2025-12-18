@@ -58,18 +58,18 @@ export const ProjectItemsTab = ({ projectId }: ProjectItemsTabProps) => {
     queryKey: ["project-items", projectId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("project_items")
+        .from("project_items" as any)
         .select("*")
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as ProjectItem[];
+      return data as unknown as ProjectItem[];
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("project_items").insert({
+      const { error } = await supabase.from("project_items" as any).insert({
         project_id: projectId,
         item_name: formData.item_name,
         description: formData.description || null,
@@ -82,7 +82,7 @@ export const ProjectItemsTab = ({ projectId }: ProjectItemsTabProps) => {
         start_date: formData.start_date || null,
         end_date: formData.end_date || null,
         created_by: user?.id,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -98,7 +98,7 @@ export const ProjectItemsTab = ({ projectId }: ProjectItemsTabProps) => {
   const updateMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("project_items")
+        .from("project_items" as any)
         .update({
           item_name: formData.item_name,
           description: formData.description || null,
@@ -110,7 +110,7 @@ export const ProjectItemsTab = ({ projectId }: ProjectItemsTabProps) => {
           completion_percentage: formData.completion_percentage,
           start_date: formData.start_date || null,
           end_date: formData.end_date || null,
-        })
+        } as any)
         .eq("id", id);
       if (error) throw error;
     },
@@ -126,7 +126,7 @@ export const ProjectItemsTab = ({ projectId }: ProjectItemsTabProps) => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("project_items").delete().eq("id", id);
+      const { error } = await supabase.from("project_items" as any).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

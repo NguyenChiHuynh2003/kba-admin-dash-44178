@@ -151,17 +151,7 @@ export function AssetAllocationDialog({
 
         if (updateAllocationError) throw updateAllocationError;
 
-        // Lấy thông tin tài sản hiện tại
-        const { data: currentAsset } = await supabase
-          .from("asset_master_data")
-          .select("stock_quantity, allocated_quantity")
-          .eq("id", allocation.asset_master_id)
-          .single();
-
-        // Cập nhật số lượng: cộng lại vào kho, trừ từ đã phân bổ
-        const newStockQty = (currentAsset?.stock_quantity || 0) + returnQty;
-        const newAllocatedQty = Math.max(0, (currentAsset?.allocated_quantity || 0) - returnQty);
-        
+        // Cập nhật trạng thái tài sản dựa trên phần trăm tái sử dụng
         const newStatus =
           parseFloat(formData.reusability_percentage || "100") >= 80
             ? "in_stock"
@@ -169,11 +159,7 @@ export function AssetAllocationDialog({
 
         const { error: updateAssetError } = await supabase
           .from("asset_master_data")
-          .update({ 
-            current_status: newStatus,
-            stock_quantity: newStockQty,
-            allocated_quantity: newAllocatedQty
-          })
+          .update({ current_status: newStatus })
           .eq("id", allocation.asset_master_id);
 
         if (updateAssetError) throw updateAssetError;
